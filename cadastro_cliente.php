@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $nomeImagem = "usuario_" . time() . "." . $extensao;
             move_uploaded_file($foto["tmp_name"], "uploads/usuario/" . $nomeImagem);
         }
-        
+
 
         // Verificar se o email já existe
         $sql = "SELECT * FROM cliente WHERE email = '$email'";

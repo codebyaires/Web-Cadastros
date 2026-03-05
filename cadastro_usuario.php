@@ -12,6 +12,20 @@ require_once "logado.php";
 // Incluir o arquivo de conexão com o banco
 require_once "conexao.php";
 
+$editando = NULL;
+if (isset($_GET["editar"])) {
+    $id = $_GET["editar"];
+    $sql = "SELECT * FROM usuario WHERE id = '$id'";
+    $res = mysqli_query($conexao, $sql);
+    $editando = mysqli_fetch_assoc($res);
+}
+
+if (isset($_GET["excluir"])) {
+    $id = $_GET["excluir"];
+    $sql = "DELETE FROM usuario WHERE id = '$id'";
+    $res = mysqli_query($conexao, $sql);
+}
+
 // Variáveis para mensagens
 $sucesso = "";
 $erro = "";
@@ -19,22 +33,29 @@ $erro = "";
 // Verificar se o formulário de cadastro foi enviado
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
+    $id  = $_POST["id"];
     $nome  = $_POST["nome"];
     $email = $_POST["email"];
-    $senha = $_POST["senha"];
+    $senha = !$id ? $_POST["senha"] : '';
 
     // Verificar se o email já existe
     $sql = "SELECT * FROM usuario WHERE email = '$email'";
     $resultado = mysqli_query($conexao, $sql);
 
-    if (mysqli_num_rows($resultado) > 0) {
+    if (mysqli_num_rows($resultado) > 0 && $editando !== NULL) {
         $erro = "Este email já está cadastrado.";
     } else {
         // Criptografar a senha
         $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
 
         // Inserir o novo usuário
-        $sql = "INSERT INTO usuario (nome, email, senha) VALUES ('$nome', '$email', '$senhaHash')";
+        if($id){
+            $sql = "UPDATE usuario SET  nome = '$nome', email = '$email' WHERE id = $id";
+        }else{
+            $sql = "INSERT INTO usuario (nome, email, senha) VALUES ('$nome', '$email', '$senhaHash')";
+        }
+        
+     
 
         if (mysqli_query($conexao, $sql)) {
             $sucesso = "Usuário cadastrado com sucesso!";
@@ -92,13 +113,14 @@ $usuarios = mysqli_query($conexao, $sql);
         <!-- Formulário de Cadastro -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-8 max-w-xl">
             <form method="POST" action="cadastro_usuario.php">
-
+                <input type="hidden" value="<?=$editando['id'] ?? "" ?>" name="id"/>
                 <!-- Campo Nome -->
                 <div class="mb-4">
                     <label for="nome" class="block text-gray-700 font-medium mb-2">
                         Nome
                     </label>
                     <input
+                        value="<?=$editando['nome'] ?? "" ?>"
                         type="text"
                         id="nome"
                         name="nome"
@@ -114,6 +136,7 @@ $usuarios = mysqli_query($conexao, $sql);
                         Email
                     </label>
                     <input
+                        value="<?=$editando['email'] ?? "" ?>"
                         type="email"
                         id="email"
                         name="email"
@@ -124,19 +147,21 @@ $usuarios = mysqli_query($conexao, $sql);
                 </div>
 
                 <!-- Campo Senha -->
-                <div class="mb-6">
-                    <label for="senha" class="block text-gray-700 font-medium mb-2">
-                        Senha
-                    </label>
-                    <input
-                        type="password"
-                        id="senha"
-                        name="senha"
-                        required
-                        placeholder="Digite a senha"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                </div>
+                 <?php if(!$editando){ ?>
+                    <div class="mb-6">
+                        <label for="senha" class="block text-gray-700 font-medium mb-2">
+                            Senha
+                        </label>
+                        <input
+                            type="password"
+                            id="senha"
+                            name="senha"
+                            required
+                            placeholder="Digite a senha"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                    </div>
+                <?php } ?>
 
                 <!-- Botão Cadastrar -->
                 <button
@@ -159,6 +184,7 @@ $usuarios = mysqli_query($conexao, $sql);
                         <th class="px-4 py-3 text-left">Nome</th>
                         <th class="px-4 py-3 text-left">Email</th>
                         <th class="px-4 py-3 text-left rounded-tr-lg">Criado em</th>
+                        <th class="px-4 py-3 text-left">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -173,7 +199,11 @@ $usuarios = mysqli_query($conexao, $sql);
                             <td class="px-4 py-3"><?php echo $u["id"]; ?></td>
                             <td class="px-4 py-3"><?php echo $u["nome"]; ?></td>
                             <td class="px-4 py-3"><?php echo $u["email"]; ?></td>
-                            <td class="px-4 py-3"><?php echo $u["criado_em"]; ?></td>
+                            <td class="px-4 py-3 text-gray-500"><?php echo $u["criado_em"]; ?></td>
+                            <td class="px-4 py-3">
+                                <a class="editar" href="?editar=<?=$u["id"]; ?>">Editar</a><br>
+                                <a onclick="return confirm('Tem certeza disso?')" class="exluir" href="?excluir=<?=$u["id"]; ?>">Excluir</a>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
