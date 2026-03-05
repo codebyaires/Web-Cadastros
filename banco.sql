@@ -1,25 +1,28 @@
 -- ============================================
--- AULA 2 — Criação do Banco de Dados e Tabela
+-- BANCO DE DADOS — Projeto SENAI
+-- Script de criação do banco e das tabelas
 -- ============================================
 
--- Criar o banco de dados do projeto
+-- 1. Criar o banco de dados do projeto (caso não exista)
 CREATE DATABASE IF NOT EXISTS projeto
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_general_ci;
 
--- Selecionar o banco
+-- 2. Selecionar o banco para os próximos comandos
 USE projeto;
 
--- Criar a tabela de usuários
+-- ============================================
+-- TABELA 1: usuario (Acesso ao Sistema)
+-- ============================================
 CREATE TABLE IF NOT EXISTS usuario (
   id         INT AUTO_INCREMENT PRIMARY KEY,
   nome       VARCHAR(100) NOT NULL,
   email      VARCHAR(100) NOT NULL UNIQUE,
   senha      VARCHAR(255) NOT NULL,
   criado_em  DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Inserir um usuário de teste
+-- Inserir um usuário de teste (Admin)
 -- Senha: 123456 (criptografada com password_hash)
 INSERT INTO usuario (nome, email, senha) VALUES (
   'Administrador',
@@ -27,16 +30,33 @@ INSERT INTO usuario (nome, email, senha) VALUES (
   '$2y$10$Wiyq0IuO9JEW2K5rakVjDu/SUE/ZCkdiw0dWs.4ZNKy7U/hrLvFxa'
 );
 
-DROP TABLE IF EXISTS `cliente`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `cliente` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nome` varchar(45) DEFAULT NULL,
-  `telefone` varchar(45) DEFAULT NULL,
-  `email` varchar(45) DEFAULT NULL,
-  `cpf` varchar(45) DEFAULT NULL,
-  `endereco` varchar(45) DEFAULT NULL,
-  `criado_em` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- ============================================
+-- TABELA 2: cliente (Dados dos Clientes)
+-- ============================================
+-- Remove a tabela se ela já existir para recriar limpa
+DROP TABLE IF EXISTS cliente;
+
+CREATE TABLE cliente (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  nome       VARCHAR(100) DEFAULT NULL,
+  telefone   VARCHAR(20) DEFAULT NULL,
+  email      VARCHAR(100) DEFAULT NULL,
+  cpf        VARCHAR(20) DEFAULT NULL,
+  endereco   VARCHAR(255) DEFAULT NULL,
+  foto       VARCHAR(255) DEFAULT NULL, -- Coluna para salvar o nome da imagem
+  criado_em  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ============================================
+-- TABELA 3: produto (Estoque)
+-- ============================================
+-- Remove a tabela se ela já existir para recriar limpa
+DROP TABLE IF EXISTS produto;
+
+CREATE TABLE produto (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  nome       VARCHAR(255) NOT NULL,
+  quantidade INT NOT NULL DEFAULT 0,
+  valor      DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  criado_em  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

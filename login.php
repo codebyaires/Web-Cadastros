@@ -9,7 +9,7 @@ session_start();
 
 // Se já está logado, redireciona para o dashboard
 if (isset($_SESSION["usuario_id"])) {
-    header("Location: cadastro_usuario.php");
+    header("Location: /web-cadastros/cadastro_usuario.php");
     exit;
 }
 
